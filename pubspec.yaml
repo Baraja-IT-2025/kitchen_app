@@ -1,0 +1,32 @@
+name: kitchen_app
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  audioplayers: ^5.2.0 
+  font_awesome_flutter: ^10.7.0
+  intl: ^0.18.1
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/logo.png
+    - assets/products/latte_caramel.jpg
+    - assets/products/espresso_double.jpg
+    - assets/products/capucino.jpg
+    - assets/audio/ding.mp3
+    - assets/audio/login.mp3
+    - assets/audio/alert.mp3

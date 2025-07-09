@@ -168,11 +168,11 @@ class _KitchenDashboardState extends State<KitchenDashboard>
   }
 
   Widget _buildOrderCard(
-    Order order, {
-    required VoidCallback onTap,
-    bool showTimer = false,
-    bool isDone = false,
-  }) {
+      Order order, {
+        required VoidCallback onTap,
+        bool showTimer = false,
+        bool isDone = false,
+      }) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300),
       curve: Curves.easeInOut,
@@ -226,11 +226,11 @@ class _KitchenDashboardState extends State<KitchenDashboard>
                     fontWeight: FontWeight.bold,
                     color: showTimer
                         ? (order.remaining.inSeconds < 0
-                              ? Colors.red
-                              : Colors.orangeAccent)
+                        ? Colors.red
+                        : Colors.orangeAccent)
                         : (order.waitingTooLong
-                              ? Colors.redAccent
-                              : Color(0xFF005429)),
+                        ? Colors.redAccent
+                        : Color(0xFF005429)),
                   ),
                 ),
                 if (!showTimer && order.waitingTooLong)
@@ -288,12 +288,12 @@ class _KitchenDashboardState extends State<KitchenDashboard>
   }
 
   Widget _buildColumn(
-    String title,
-    List<Order> list,
-    Function(Order) onTap, {
-    bool showTimer = false,
-    bool isDone = false,
-  }) {
+      String title,
+      List<Order> list,
+      Function(Order) onTap, {
+        bool showTimer = false,
+        bool isDone = false,
+      }) {
     return Expanded(
       child: Column(
         children: [
@@ -314,12 +314,12 @@ class _KitchenDashboardState extends State<KitchenDashboard>
               children: list
                   .map(
                     (order) => _buildOrderCard(
-                      order,
-                      onTap: () => onTap(order),
-                      showTimer: showTimer,
-                      isDone: isDone,
-                    ),
-                  )
+                  order,
+                  onTap: () => onTap(order),
+                  showTimer: showTimer,
+                  isDone: isDone,
+                ),
+              )
                   .toList(),
             ),
           ),
@@ -447,13 +447,13 @@ class Order {
   bool alertPlayed = false;
 
   Order(
-    this.name,
-    this.imageName,
-    this.duration,
-    this.customerName,
-    this.tableNumber,
-    this.quantity,
-  ) : remaining = duration;
+      this.name,
+      this.imageName,
+      this.duration,
+      this.customerName,
+      this.tableNumber,
+      this.quantity,
+      ) : remaining = duration;
 
   Order copy() {
     return Order(

@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 0.1.0
 
 environment:
-  sdk: ^3.8.1
+  sdk: ^3.7.2
 
 dependencies:
   flutter:
@@ -12,6 +12,7 @@ dependencies:
   audioplayers: ^5.2.0 
   font_awesome_flutter: ^10.7.0
   intl: ^0.18.1
+  flutter_dotenv: ^5.2.1
 
 
 dev_dependencies:
@@ -30,3 +31,4 @@ flutter:
     - assets/audio/ding.mp3
     - assets/audio/login.mp3
     - assets/audio/alert.mp3
+    - .env

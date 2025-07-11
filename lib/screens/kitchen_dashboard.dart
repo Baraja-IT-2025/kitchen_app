@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import '../models/order.dart';
-import '../data/sample_data.dart';
+import '../services/order_service.dart';
 import '../services/audio_service.dart';
 import '../widgets/order_column.dart';
 import '../config/app_theme.dart';
@@ -18,14 +18,18 @@ class _KitchenDashboardState extends State<KitchenDashboard> {
   List<Order> preparing = [];
   List<Order> done = [];
   String search = '';
+  bool _isLoading = false;
+  String? _errorMessage;
+
   late Timer _uiTimer;
   late Timer _clockTimer;
+  late Timer _refreshTimer;
   DateTime _currentTime = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    queue = SampleData.getSampleOrders();
+    _loadOrders();
     _initializeTimers();
   }
 
@@ -39,6 +43,11 @@ class _KitchenDashboardState extends State<KitchenDashboard> {
       setState(() {
         _currentTime = DateTime.now();
       });
+    });
+
+    // Refresh orders every 30 seconds
+    _refreshTimer = Timer.periodic(Duration(seconds: 30), (_) {
+      _refreshOrders();
     });
   }
 
@@ -55,7 +64,43 @@ class _KitchenDashboardState extends State<KitchenDashboard> {
   void dispose() {
     _uiTimer.cancel();
     _clockTimer.cancel();
+    _refreshTimer.cancel();
     super.dispose();
+  }
+
+  Future<void> _loadOrders() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final ordersMap = await OrderService.refreshOrders();
+      setState(() {
+        queue = ordersMap['pending'] ?? [];
+        preparing = ordersMap['preparing'] ?? [];
+        done = ordersMap['completed'] ?? [];
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _refreshOrders() async {
+    try {
+      final ordersMap = await OrderService.refreshOrders();
+      setState(() {
+        queue = ordersMap['pending'] ?? [];
+        preparing = ordersMap['preparing'] ?? [];
+        done = ordersMap['completed'] ?? [];
+      });
+    } catch (e) {
+      print('Error refreshing orders: $e');
+    }
   }
 
   void _confirmOrder(Order order) async {
@@ -64,6 +109,11 @@ class _KitchenDashboardState extends State<KitchenDashboard> {
       order.startTimer();
       preparing.add(order);
     });
+
+    // Update order status in database from 'Waiting' to 'OnProcess'
+    if (order.orderId != null) {
+      await OrderService.updateOrderStatus(order.orderId!, 'OnProcess');
+    }
     await AudioService.playLogin();
   }
 
@@ -73,6 +123,11 @@ class _KitchenDashboardState extends State<KitchenDashboard> {
       order.stopTimer();
       done.add(order);
     });
+
+    // Update order status in database from 'OnProcess' to 'Completed'
+    if (order.orderId != null) {
+      await OrderService.updateOrderStatus(order.orderId!, 'Completed');
+    }
     await AudioService.playDing();
     _showOrderCompleteDialog(order);
   }
@@ -97,6 +152,51 @@ class _KitchenDashboardState extends State<KitchenDashboard> {
     setState(() {
       order.remaining += Duration(minutes: minutes);
     });
+  }
+
+  Widget _buildErrorWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 64,
+            color: Colors.red,
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Error loading orders',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            _errorMessage ?? 'Unknown error occurred',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+          SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _loadOrders,
+            icon: Icon(Icons.refresh),
+            label: Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text('Loading orders...'),
+        ],
+      ),
+    );
   }
 
   Widget _buildDesktopLayout() {
@@ -193,6 +293,11 @@ class _KitchenDashboardState extends State<KitchenDashboard> {
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
             Spacer(),
+            IconButton(
+              icon: Icon(Icons.refresh, color: Colors.white),
+              onPressed: _isLoading ? null : _loadOrders,
+            ),
+            SizedBox(width: 8),
             Text(
               DateFormat('HH:mm:ss').format(_currentTime),
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -208,12 +313,22 @@ class _KitchenDashboardState extends State<KitchenDashboard> {
               decoration: InputDecoration(
                 hintText: 'Cari nama pelanggan atau produk...',
                 prefixIcon: Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
           ),
         ),
       ),
-      body: LayoutBuilder(
+      body: _isLoading
+          ? _buildLoadingWidget()
+          : _errorMessage != null
+          ? _buildErrorWidget()
+          : LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth > 1000) {
             return _buildDesktopLayout();

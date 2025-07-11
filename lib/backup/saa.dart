@@ -7,6 +7,8 @@ void main() {
 }
 
 class BarajaKitchenApp extends StatelessWidget {
+  const BarajaKitchenApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

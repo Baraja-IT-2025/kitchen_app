@@ -15,7 +15,7 @@ class OrderColumn extends StatelessWidget {
   final Function(Order, int)? onAddTime;
 
   const OrderColumn({
-    Key? key,
+    super.key,
     required this.title,
     required this.orders,
     required this.onAction,
@@ -23,7 +23,7 @@ class OrderColumn extends StatelessWidget {
     this.showTimer = false,
     this.isFinished = false,
     this.onAddTime,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

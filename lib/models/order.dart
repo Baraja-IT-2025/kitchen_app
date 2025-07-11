@@ -12,6 +12,10 @@ class Order {
   Timer? _timer;
   bool alertPlayed = false;
 
+  // Additional fields for API integration
+  String? originalStatus;
+  String? orderId;
+
   Order(this.name, this.table, this.service, this.items, {DateTime? start})
       : start = start ?? DateTime.now();
 

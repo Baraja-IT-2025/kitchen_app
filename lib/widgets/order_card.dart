@@ -11,13 +11,13 @@ class OrderCard extends StatelessWidget {
   final Function(Order, int) onAddTime;
 
   const OrderCard({
-    Key? key,
+    super.key,
     required this.order,
     required this.onAction,
     this.showTimer = false,
     this.isFinished = false,
     required this.onAddTime,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
